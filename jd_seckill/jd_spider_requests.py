@@ -297,7 +297,7 @@ class JdTdudfp:
         try:
             from pyppeteer import launch
             url = "https://www.jd.com/"
-            browser = await launch(userDataDir=".user_data", autoClose=True,
+            browser = await launch(userDataDir=".user_data", autoClose=True,headless=False,
                                    args=['--start-maximized', '--no-sandbox', '--disable-setuid-sandbox'])
             page = await browser.newPage()
             # 有些页面打开慢，这里设置时间长一点，360秒
@@ -325,6 +325,7 @@ class JdTdudfp:
             await page.waitFor(".goods_item_link")
             logger.info("page_title：【%s】, page_url：【%s】" % (await page.title(), page.url))
             a_href = await page.querySelectorAllEval(".goods_item_link", "(elements) => elements[0].href")
+            a_href='https://item.jd.com/3447926.html'
             await page.goto(a_href)
             await page.waitFor("#InitCartUrl")
             logger.info("page_title：【%s】, page_url：【%s】" % (await page.title(), page.url))
@@ -345,13 +346,17 @@ class JdTdudfp:
                 jd_tdudfp = await page.evaluate("() => {try{return _JdTdudfp}catch(e){}}")
                 if jd_tdudfp and len(jd_tdudfp) > 0:
                     logger.info("jd_tdudfp：【%s】" % jd_tdudfp)
+                    f = open('account.txt', 'w') # 若是'wb'就表示写二进制文件
+                    f.write("eid = \"%s\"\n" % jd_tdudfp.get("eid"))
+                    f.write("fp = \"%s\"\n" % jd_tdudfp.get("fp"))
+                    f.close()
                     break
                 else:
                     await asyncio.sleep(1)
 
             await page.close()
         except Exception as e:
-            logger.info("自动获取JdTdudfp发生异常，将从配置文件读取！")
+            logger.info("自动获取JdTdudfp发生异常，将从配置文件读取！",e)
         return jd_tdudfp
 
 
